@@ -120,8 +120,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # RAZORPAY CONFIGURATION
-RAZORPAY_KEY_ID = 'rzp_test_SUPjglNy7nN8fL'       # Paste your Key ID
-RAZORPAY_KEY_SECRET = 'SlReqlrHk4SPdiYp0wRBGxAQ'   
+RAZORPAY_KEY_ID = 'rzp_test_SXDbb7LksKPsVZ'       # Paste your Key ID
+RAZORPAY_KEY_SECRET = '0Zvh8ng8rlxXxNS31hkfH0lt'   
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
