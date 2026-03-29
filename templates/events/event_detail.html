@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% block page_title %}Event Details{% endblock %}
+
+{% block content %}
+<style>
+    /* ── ACTIVITIES SECTION ───────────────────────────── */
+    .activities-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .activities-title {
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        color: var(--text);
+    }
+
+    .activities-count {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .2rem .65rem;
+    }
+
+    /* ── ACTIVITY LIST ────────────────────────────────── */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .activity-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .9rem 1.1rem;
+        gap: 1rem;
+        transition: border-color .18s, background .18s, transform .18s;
+        animation: fadeUp .35s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .activity-item:nth-child(1) { animation-delay: .04s; }
+    .activity-item:nth-child(2) { animation-delay: .08s; }
+    .activity-item:nth-child(3) { animation-delay: .12s; }
+    .activity-item:nth-child(4) { animation-delay: .16s; }
+    .activity-item:nth-child(5) { animation-delay: .20s; }
+
+    .activity-item:hover {
+        border-color: var(--accent);
+        background: rgba(245,166,35,.03);
+        transform: translateX(3px);
+    }
+
+    .activity-left {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        min-width: 0;
+    }
+
+    .activity-index {
+        width: 28px; height: 28px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        flex-shrink: 0;
+        transition: all .18s;
+    }
+
+    .activity-item:hover .activity-index {
+        background: rgba(245,166,35,.1);
+        border-color: rgba(245,166,35,.3);
+        color: var(--accent);
+    }
+
+    .activity-name {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .join-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .42rem .95rem;
+        border-radius: 8px;
+        font-family: var(--display);
+        font-size: .78rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all .18s;
+        cursor: pointer;
+        border: none;
+    }
+
+    .join-btn.auth { background: var(--accent); color: #000; }
+    .join-btn.auth:hover {
+        background: #ffc04a; color: #000;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(245,166,35,.3);
+    }
+
+    .join-btn.guest {
+        background: var(--surface2);
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+    .join-btn.guest:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+        background: rgba(59,130,246,.07);
+    }
+
+    .activities-empty {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 2.5rem;
+        text-align: center;
+    }
+
+    .activities-empty i { font-size: 1.5rem; color: var(--muted); display: block; margin-bottom: .75rem; }
+    .activities-empty p { font-size: .8rem; color: var(--muted); font-family: var(--mono); margin: 0; }
+
+    /* ── GALLERY ──────────────────────────────────────── */
+    .gallery-section { margin-top: 2.5rem; }
+
+    .gallery-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.1rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .gallery-head-left {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .gallery-icon {
+        width: 28px; height: 28px;
+        background: rgba(163,122,246,.1);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: .8rem;
+        color: #a37af6;
+        flex-shrink: 0;
+    }
+
+    .gallery-title {
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        color: var(--text);
+    }
+
+    .gallery-count {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .2rem .65rem;
+    }
+
+    /* Grid */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: .85rem;
+    }
+
+    @media (max-width: 900px)  { .gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 620px)  { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .gallery-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: border-color .2s, transform .2s, box-shadow .2s;
+        animation: fadeUp .4s ease both;
+    }
+
+    .gallery-item:nth-child(1)  { animation-delay: .04s; }
+    .gallery-item:nth-child(2)  { animation-delay: .07s; }
+    .gallery-item:nth-child(3)  { animation-delay: .10s; }
+    .gallery-item:nth-child(4)  { animation-delay: .13s; }
+    .gallery-item:nth-child(5)  { animation-delay: .16s; }
+    .gallery-item:nth-child(6)  { animation-delay: .19s; }
+    .gallery-item:nth-child(7)  { animation-delay: .22s; }
+    .gallery-item:nth-child(8)  { animation-delay: .25s; }
+
+    .gallery-item:hover {
+        border-color: #a37af6;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(0,0,0,.3);
+    }
+
+    /* Image wrapper with zoom on hover */
+    .gallery-img-wrap {
+        overflow: hidden;
+        height: 160px;
+        display: block;
+        position: relative;
+    }
+
+    .gallery-img-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform .35s ease;
+    }
+
+    .gallery-item:hover .gallery-img-wrap img {
+        transform: scale(1.06);
+    }
+
+    /* Expand icon on hover */
+    .gallery-img-wrap::after {
+        content: '\F52A';   /* bi-arrows-fullscreen unicode */
+        font-family: 'bootstrap-icons';
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(.7);
+        opacity: 0;
+        color: #fff;
+        font-size: 1.4rem;
+        transition: all .25s;
+        pointer-events: none;
+        text-shadow: 0 2px 8px rgba(0,0,0,.6);
+    }
+
+    .gallery-item:hover .gallery-img-wrap::after {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Caption */
+    .gallery-caption {
+        padding: .5rem .75rem;
+        font-size: .7rem;
+        color: var(--muted);
+        font-family: var(--mono);
+        border-top: 1px solid var(--border);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Gallery empty state */
+    .gallery-empty {
+        grid-column: 1 / -1;
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 2.5rem;
+        text-align: center;
+    }
+
+    .gallery-empty i { font-size: 1.4rem; color: var(--muted); display: block; margin-bottom: .65rem; }
+    .gallery-empty p { font-size: .78rem; color: var(--muted); font-family: var(--mono); margin: 0; }
+</style>
+
+<!-- ── ACTIVITIES ─────────────────────────────────────────── -->
+<div class="activities-header">
+    <span class="activities-title">Activities</span>
+    <span class="activities-count">{{ event.activities.count }} available</span>
+</div>
+
+<div class="activity-list">
+    {% for activity in event.activities.all %}
+    <div class="activity-item">
+        <div class="activity-left">
+            <div class="activity-index">{{ forloop.counter }}</div>
+            <span class="activity-name">{{ activity.name }}</span>
+        </div>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'enroll_activity' activity.id %}" class="join-btn auth">
+                <i class="bi bi-lightning-charge-fill"></i> Join Activity
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="join-btn guest">
+                <i class="bi bi-box-arrow-in-right"></i> Login to Join
+            </a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="activities-empty">
+        <i class="bi bi-calendar2-x"></i>
+        <p>no activities added for this event yet</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ── EVENT GALLERY ──────────────────────────────────────── -->
+<div class="gallery-section">
+    <div class="gallery-header">
+        <div class="gallery-head-left">
+            <div class="gallery-icon"><i class="bi bi-images"></i></div>
+            <span class="gallery-title">Event Gallery</span>
+        </div>
+        <span class="gallery-count">{{ event.gallery.count }} photo{{ event.gallery.count|pluralize }}</span>
+    </div>
+
+    <div class="gallery-grid">
+        {% for pic in event.gallery.all %}
+        <div class="gallery-item">
+            <a href="{{ pic.image.url }}" target="_blank" class="gallery-img-wrap">
+                <img src="{{ pic.image.url }}" alt="{{ pic.caption|default:event.title }}">
+            </a>
+            {% if pic.caption %}
+            <div class="gallery-caption">{{ pic.caption }}</div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="gallery-empty">
+            <i class="bi bi-image"></i>
+            <p>no images uploaded for this event yet</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

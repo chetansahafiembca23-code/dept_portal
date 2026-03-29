@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+{% block page_title %}Event Memories{% endblock %}
+
+{% block content %}
+<style>
+
+    /* ── PAGE HEADER ──────────────────────────────────── */
+    .gallery-page-head {
+        margin-bottom: 2rem;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .gallery-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-family: var(--mono);
+        font-size: .67rem;
+        color: #a37af6;
+        background: rgba(163,122,246,.1);
+        border: 1px solid rgba(163,122,246,.2);
+        border-radius: 20px;
+        padding: .25rem .75rem;
+        margin-bottom: .9rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .gallery-page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -.04em;
+        color: var(--text);
+        margin-bottom: .3rem;
+    }
+
+    .gallery-page-sub {
+        font-size: .78rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    /* ── TOOLBAR ──────────────────────────────────────── */
+    .gallery-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        animation: fadeUp .4s ease .08s both;
+    }
+
+    /* Filter pills */
+    .filter-pills {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .38rem .85rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-family: var(--display);
+        font-size: .75rem;
+        font-weight: 700;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all .18s;
+        user-select: none;
+    }
+
+    .filter-pill:hover { border-color: #a37af6; color: #a37af6; }
+
+    .filter-pill.active {
+        background: rgba(163,122,246,.12);
+        border-color: rgba(163,122,246,.4);
+        color: #a37af6;
+    }
+
+    .filter-pill .pill-count {
+        font-family: var(--mono);
+        font-size: .62rem;
+        background: var(--surface2);
+        border-radius: 10px;
+        padding: .1rem .4rem;
+        color: var(--muted);
+    }
+
+    .filter-pill.active .pill-count {
+        background: rgba(163,122,246,.2);
+        color: #a37af6;
+    }
+
+    /* View toggle */
+    .view-toggle {
+        display: flex;
+        gap: .3rem;
+    }
+
+    .view-btn {
+        width: 34px; height: 34px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        display: grid; place-items: center;
+        font-size: .85rem;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+    .view-btn.active, .view-btn:hover {
+        border-color: #a37af6;
+        color: #a37af6;
+        background: rgba(163,122,246,.08);
+    }
+
+    /* ── MASONRY GRID ─────────────────────────────────── */
+    .masonry-grid {
+        columns: 4;
+        column-gap: .85rem;
+        animation: fadeUp .4s ease .14s both;
+    }
+
+    @media (max-width: 1100px) { .masonry-grid { columns: 3; } }
+    @media (max-width: 720px)  { .masonry-grid { columns: 2; } }
+    @media (max-width: 420px)  { .masonry-grid { columns: 1; } }
+
+    .masonry-grid.grid-view {
+        columns: unset;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: .85rem;
+    }
+
+    @media (max-width: 1100px) { .masonry-grid.grid-view { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 720px)  { .masonry-grid.grid-view { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── PHOTO CARD ───────────────────────────────────── */
+    .photo-card {
+        break-inside: avoid;
+        margin-bottom: .85rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color .2s, transform .2s, box-shadow .2s;
+        position: relative;
+    }
+
+    .photo-card:hover {
+        border-color: #a37af6;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(0,0,0,.4);
+    }
+
+    .photo-card.hidden {
+        display: none;
+    }
+
+    /* Uniform height in grid view */
+    .masonry-grid.grid-view .photo-card { margin-bottom: 0; }
+    .masonry-grid.grid-view .photo-img  { height: 200px !important; }
+
+    .photo-img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform .4s ease;
+    }
+
+    .photo-card:hover .photo-img { transform: scale(1.04); }
+
+    /* Overlay */
+    .photo-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to top,
+            rgba(10,10,11,.88) 0%,
+            rgba(10,10,11,.15) 50%,
+            transparent 100%
+        );
+        opacity: 0;
+        transition: opacity .25s;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: .85rem 1rem;
+    }
+
+    .photo-card:hover .photo-overlay { opacity: 1; }
+
+    .overlay-event {
+        font-size: .72rem;
+        font-weight: 800;
+        color: #a37af6;
+        font-family: var(--mono);
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        margin-bottom: .2rem;
+    }
+
+    .overlay-caption {
+        font-size: .8rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.4;
+    }
+
+    /* Expand icon */
+    .photo-expand {
+        position: absolute;
+        top: .6rem; right: .6rem;
+        width: 28px; height: 28px;
+        background: rgba(10,10,11,.65);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: .75rem;
+        color: var(--text);
+        opacity: 0;
+        transition: opacity .2s, background .15s;
+    }
+
+    .photo-card:hover .photo-expand { opacity: 1; }
+    .photo-expand:hover { background: #a37af6; }
+
+    /* Bottom caption bar (visible always) */
+    .photo-bar {
+        padding: .5rem .85rem;
+        border-top: 1px solid var(--border);
+        font-size: .68rem;
+        color: var(--muted);
+        font-family: var(--mono);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .photo-bar i { font-size: .7rem; flex-shrink: 0; }
+
+    /* ── EMPTY STATE ──────────────────────────────────── */
+    .gallery-empty {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        padding: 4rem 2rem;
+        text-align: center;
+        grid-column: 1 / -1;
+    }
+
+    .gallery-empty i { font-size: 1.6rem; color: var(--muted); display: block; margin-bottom: .75rem; }
+    .gallery-empty h5 { font-size: .95rem; font-weight: 800; color: var(--text); margin-bottom: .35rem; }
+    .gallery-empty p { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: 0; }
+
+    /* ── LIGHTBOX ─────────────────────────────────────── */
+    .lightbox-overlay {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(5,5,6,.92);
+        z-index: 1000;
+        backdrop-filter: blur(6px);
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-inner {
+        position: relative;
+        max-width: 900px;
+        width: 100%;
+        animation: lbIn .25s ease both;
+    }
+
+    @keyframes lbIn {
+        from { opacity: 0; transform: scale(.93); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+
+    .lightbox-img {
+        width: 100%;
+        max-height: 75vh;
+        object-fit: contain;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        display: block;
+    }
+
+    .lightbox-info {
+        margin-top: .85rem;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .lb-event {
+        font-size: .7rem;
+        font-family: var(--mono);
+        color: #a37af6;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: .2rem;
+    }
+
+    .lb-caption {
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .lb-counter {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Nav arrows */
+    .lb-prev, .lb-next {
+        position: absolute;
+        top: 50%; transform: translateY(-50%);
+        width: 42px; height: 42px;
+        background: rgba(17,17,20,.8);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        display: grid; place-items: center;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all .15s;
+        user-select: none;
+    }
+
+    .lb-prev { left: -56px; }
+    .lb-next { right: -56px; }
+
+    .lb-prev:hover, .lb-next:hover {
+        background: #a37af6;
+        border-color: #a37af6;
+    }
+
+    @media (max-width: 700px) {
+        .lb-prev { left: .5rem; }
+        .lb-next { right: .5rem; }
+    }
+
+    /* Close button */
+    .lb-close {
+        position: fixed;
+        top: 1.25rem; right: 1.25rem;
+        width: 38px; height: 38px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        display: grid; place-items: center;
+        font-size: .95rem;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all .15s;
+        z-index: 10;
+    }
+
+    .lb-close:hover { background: #f43f5e; border-color: #f43f5e; color: #fff; }
+
+    /* Photo count stats */
+    .gallery-stats {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-family: var(--mono);
+        font-size: .7rem;
+        color: var(--muted);
+    }
+
+    .gallery-stats span { color: var(--text); font-weight: 700; }
+</style>
+
+<!-- ── PAGE HEADER ────────────────────────────────────────── -->
+<div class="gallery-page-head">
+    <div class="gallery-eyebrow"><i class="bi bi-images"></i> Visual Archive</div>
+    <div class="gallery-page-title">Event Memories</div>
+    <div class="gallery-page-sub">glimpses of activities and celebrations across all departments</div>
+</div>
+
+<!-- ── TOOLBAR ───────────────────────────────────────────── -->
+<div class="gallery-toolbar">
+    <div class="filter-pills" id="filterPills">
+        <div class="filter-pill active" data-filter="all">
+            All Photos
+            <span class="pill-count" id="countAll">{{ photos|length }}</span>
+        </div>
+        <!-- Dynamic event filter pills generated by JS from data attributes -->
+    </div>
+
+    <div style="display:flex;align-items:center;gap:.75rem">
+        <div class="gallery-stats">
+            <span id="visibleCount">{{ photos|length }}</span> of <span>{{ photos|length }}</span> photos
+        </div>
+        <div class="view-toggle">
+            <div class="view-btn active" id="btnMasonry" title="Masonry view">
+                <i class="bi bi-grid-1x2"></i>
+            </div>
+            <div class="view-btn" id="btnGrid" title="Grid view">
+                <i class="bi bi-grid-3x3-gap"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── MASONRY GRID ───────────────────────────────────────── -->
+<div class="masonry-grid" id="galleryGrid">
+    {% for photo in photos %}
+    <div class="photo-card"
+     data-event="{{ photo.event.title }}"
+     data-event-id="{{ photo.event.id }}"
+     data-img="{{ photo.image.url }}"
+     data-caption="{{ photo.caption|default:'' }}"
+     data-index="{{ forloop.counter0 }}">
+
+        <div style="overflow:hidden; position:relative;">
+            <img
+                src="{{ photo.image.url }}"
+                class="photo-img"
+                alt="{{ photo.caption|default:photo.event.title }}"
+                loading="lazy"
+            >
+            <div class="photo-overlay">
+                <div class="overlay-event">{{ photo.event.title }}</div>
+                {% if photo.caption %}
+                <div class="overlay-caption">{{ photo.caption }}</div>
+                {% endif %}
+            </div>
+            <div class="photo-expand"><i class="bi bi-arrows-fullscreen"></i></div>
+        </div>
+
+        <div class="photo-bar">
+            <i class="bi bi-geo-alt"></i>
+            {{ photo.event.title }}
+        </div>
+    </div>
+    {% empty %}
+    <div class="gallery-empty">
+        <i class="bi bi-images"></i>
+        <h5>No Photos Yet</h5>
+        <p>no images have been uploaded to the gallery yet</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ── LIGHTBOX ───────────────────────────────────────────── -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightboxOnBg(event)">
+    <div class="lb-close" onclick="closeLightbox()"><i class="bi bi-x-lg"></i></div>
+
+    <div class="lightbox-inner">
+        <div class="lb-prev" onclick="lbNav(-1)"><i class="bi bi-chevron-left"></i></div>
+        <div class="lb-next" onclick="lbNav(1)"><i class="bi bi-chevron-right"></i></div>
+
+        <img src="" id="lbImg" class="lightbox-img" alt="">
+        <div class="lightbox-info">
+            <div>
+                <div class="lb-event" id="lbEvent"></div>
+                <div class="lb-caption" id="lbCaption"></div>
+            </div>
+            <div class="lb-counter" id="lbCounter"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Build photo data from DOM ──────────────────────────────
+const cards      = Array.from(document.querySelectorAll('.photo-card'));
+const photos     = cards.map(c => ({
+    img:     c.dataset.img,
+    caption: c.dataset.caption,
+    event:   c.dataset.event,
+    eventId: c.dataset.eventId,
+}));
+
+let currentIndex = 0;
+let activeFilter = 'all';
+let visibleIndices = photos.map((_, i) => i);
+
+cards.forEach(card => {
+    card.addEventListener('click', () => openLightbox(+card.dataset.index));
+});
+// ── Build event filter pills dynamically ──────────────────
+const eventMap = {};
+photos.forEach(p => {
+    if (!eventMap[p.event]) eventMap[p.event] = 0;
+    eventMap[p.event]++;
+});
+
+const pillsContainer = document.getElementById('filterPills');
+Object.entries(eventMap).forEach(([name, count]) => {
+    const pill = document.createElement('div');
+    pill.className = 'filter-pill';
+    pill.dataset.filter = name;
+    pill.innerHTML = `${name} <span class="pill-count">${count}</span>`;
+    pill.onclick = () => setFilter(name);
+    pillsContainer.appendChild(pill);
+});
+
+// ── Filter logic ───────────────────────────────────────────
+function setFilter(filter) {
+    activeFilter = filter;
+
+    document.querySelectorAll('.filter-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.filter === filter);
+    });
+
+    visibleIndices = [];
+    cards.forEach((card, i) => {
+        const show = filter === 'all' || card.dataset.event === filter;
+        card.classList.toggle('hidden', !show);
+        if (show) visibleIndices.push(i);
+    });
+
+    document.getElementById('visibleCount').textContent = visibleIndices.length;
+}
+
+// ── View toggle ────────────────────────────────────────────
+const grid     = document.getElementById('galleryGrid');
+const btnMas   = document.getElementById('btnMasonry');
+const btnGrd   = document.getElementById('btnGrid');
+
+btnMas.onclick = () => {
+    grid.classList.remove('grid-view');
+    btnMas.classList.add('active');
+    btnGrd.classList.remove('active');
+};
+
+btnGrd.onclick = () => {
+    grid.classList.add('grid-view');
+    btnGrd.classList.add('active');
+    btnMas.classList.remove('active');
+};
+
+// ── Lightbox ───────────────────────────────────────────────
+function openLightbox(index) {
+    currentIndex = visibleIndices.indexOf(index);
+    if (currentIndex === -1) currentIndex = 0;
+    renderLightbox();
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function closeLightboxOnBg(e) {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+}
+
+function lbNav(dir) {
+    currentIndex = (currentIndex + dir + visibleIndices.length) % visibleIndices.length;
+    renderLightbox();
+}
+
+function renderLightbox() {
+    const photo = photos[visibleIndices[currentIndex]];
+    const img   = document.getElementById('lbImg');
+
+    // Fade-swap image
+    img.style.opacity = '0';
+    setTimeout(() => {
+        img.src = photo.img;
+        img.onload = () => { img.style.opacity = '1'; };
+    }, 120);
+
+    document.getElementById('lbEvent').textContent   = photo.event;
+    document.getElementById('lbCaption').textContent = photo.caption || photo.event;
+    document.getElementById('lbCounter').textContent =
+        `${currentIndex + 1} / ${visibleIndices.length}`;
+
+    img.style.transition = 'opacity .2s';
+}
+
+// ── Keyboard navigation ────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowRight') lbNav(1);
+    if (e.key === 'ArrowLeft')  lbNav(-1);
+    if (e.key === 'Escape')     closeLightbox();
+});
+</script>
+
+{% endblock %}

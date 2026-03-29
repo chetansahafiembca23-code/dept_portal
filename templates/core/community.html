@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% block page_title %}Notice Board{% endblock %}
+
+{% block content %}
+<style>
+
+    /* ── PAGE HEADER ──────────────────────────────────── */
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        animation: fadeUp .35s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--accent);
+        background: rgba(245,166,35,.1);
+        border: 1px solid rgba(245,166,35,.2);
+        border-radius: 20px;
+        padding: .25rem .75rem;
+        margin-bottom: .9rem;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -.04em;
+        color: var(--text);
+        margin-bottom: .4rem;
+    }
+
+    .page-sub {
+        font-size: .8rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    /* ── LAYOUT ───────────────────────────────────────── */
+    .community-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 1.75rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1050px) { .community-grid { grid-template-columns: 1fr; } }
+
+    /* ── SECTION LABEL ────────────────────────────────── */
+    .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.1rem;
+        animation: fadeUp .4s ease both;
+    }
+
+    .section-head-left {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .section-icon {
+        width: 28px; height: 28px;
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: .8rem;
+        flex-shrink: 0;
+    }
+
+    .section-title {
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        color: var(--text);
+    }
+
+    .section-count {
+        font-family: var(--mono);
+        font-size: .67rem;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .18rem .6rem;
+    }
+
+    .section-count span { color: var(--accent); font-weight: 700; }
+
+    /* ── NEWSPAPER CARDS ──────────────────────────────── */
+    .newspaper-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .newspaper-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: border-color .2s, transform .2s;
+        animation: fadeUp .4s ease both;
+    }
+
+    .newspaper-card:nth-child(1) { animation-delay: .05s; }
+    .newspaper-card:nth-child(2) { animation-delay: .10s; }
+    .newspaper-card:nth-child(3) { animation-delay: .15s; }
+
+    .newspaper-card:hover {
+        border-color: var(--blue);
+        transform: translateY(-2px);
+    }
+
+    .newspaper-card::before {
+        content: '';
+        display: block;
+        height: 2px;
+        background: linear-gradient(90deg, var(--blue), #7c3aed);
+    }
+
+    .newspaper-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .85rem 1.1rem;
+        border-bottom: 1px solid var(--border);
+        gap: .75rem;
+    }
+
+    .newspaper-card-title {
+        font-size: .88rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -.02em;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .month-badge {
+        display: inline-flex;
+        align-items: center;
+        font-family: var(--mono);
+        font-size: .65rem;
+        color: var(--blue);
+        background: rgba(59,130,246,.1);
+        border: 1px solid rgba(59,130,246,.2);
+        border-radius: 20px;
+        padding: .18rem .6rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* PDF viewer */
+    .pdf-viewer {
+        width: 100%;
+        height: 420px;
+        border: none;
+        display: block;
+        background: var(--surface2);
+    }
+
+    .pdf-placeholder {
+        height: 180px;
+        background: var(--surface2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+    }
+
+    .pdf-placeholder i { font-size: 1.5rem; color: var(--muted); }
+    .pdf-placeholder p {
+        font-family: var(--mono);
+        font-size: .72rem;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    /* Card footer */
+    .newspaper-card-foot {
+        padding: .85rem 1.1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .upload-date {
+        font-family: var(--mono);
+        font-size: .67rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .pdf-dl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .42rem .9rem;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-family: var(--display);
+        font-size: .75rem;
+        font-weight: 700;
+        color: var(--blue);
+        background: rgba(59,130,246,.07);
+        text-decoration: none;
+        transition: all .18s;
+        white-space: nowrap;
+    }
+
+    .pdf-dl-btn:hover {
+        background: var(--blue);
+        color: #fff;
+        border-color: var(--blue);
+        box-shadow: 0 4px 14px rgba(59,130,246,.25);
+    }
+
+    /* Newspaper empty state */
+    .news-empty {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 2.5rem;
+        text-align: center;
+    }
+
+    .news-empty i { font-size: 1.4rem; color: var(--muted); display: block; margin-bottom: .65rem; }
+    .news-empty p { font-family: var(--mono); font-size: .75rem; color: var(--muted); margin: 0; }
+
+    /* ── ACHIEVEMENTS GRID ────────────────────────────── */
+    .ach-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.1rem;
+    }
+
+    @media (max-width: 640px) { .ach-grid { grid-template-columns: 1fr; } }
+
+    .ach-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: border-color .2s, transform .2s, box-shadow .2s;
+        animation: fadeUp .4s ease both;
+    }
+
+    .ach-card:nth-child(1) { animation-delay: .06s; }
+    .ach-card:nth-child(2) { animation-delay: .10s; }
+    .ach-card:nth-child(3) { animation-delay: .14s; }
+    .ach-card:nth-child(4) { animation-delay: .18s; }
+
+    .ach-card:hover {
+        border-color: rgba(245,166,35,.4);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(0,0,0,.3);
+    }
+
+    /* Image / placeholder */
+    .ach-img {
+        width: 100%; height: 200px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .ach-img-placeholder {
+        height: 200px;
+        background: var(--surface2);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ach-img-placeholder::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(var(--border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 24px 24px;
+        opacity: .35;
+    }
+
+    .ach-body {
+        padding: 1rem 1.1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+    .ach-title {
+        font-size: .9rem;
+        font-weight: 800;
+        color: var(--green);
+        letter-spacing: -.02em;
+        line-height: 1.3;
+    }
+
+    .ach-student {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .ach-desc {
+        font-size: .78rem;
+        color: var(--muted);
+        line-height: 1.6;
+        flex: 1;
+    }
+
+    .ach-footer {
+        padding: .6rem 1.1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        font-family: var(--mono);
+        font-size: .65rem;
+        color: var(--muted);
+    }
+
+    /* Achievements empty state */
+    .ach-empty {
+        grid-column: 1 / -1;
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .ach-empty i { font-size: 1.4rem; color: var(--muted); display: block; margin-bottom: .65rem; }
+    .ach-empty h5 { font-size: .95rem; font-weight: 800; color: var(--text); margin-bottom: .35rem; }
+    .ach-empty p { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: 0; }
+
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="page-eyebrow"><i class="bi bi-megaphone-fill"></i> Community</div>
+    <div class="page-title">Department Notice Board</div>
+    <div class="page-sub">stay updated with the latest news and celebrate our students' wins</div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="community-grid">
+
+    <!-- LEFT — Notices & Newsletters -->
+    <div>
+        <div class="section-head">
+            <div class="section-head-left">
+                <div class="section-icon" style="background:rgba(59,130,246,.1);color:var(--blue)">
+                    <i class="bi bi-newspaper"></i>
+                </div>
+                <span class="section-title">Notices & Newsletters</span>
+            </div>
+            <span class="section-count"><span>{{ newspapers|length }}</span> uploaded</span>
+        </div>
+
+        <div class="newspaper-stack">
+    {% for news in newspapers %}
+    <div class="newspaper-card">
+
+        <div class="newspaper-card-head">
+            <span class="newspaper-card-title">{{ news.title }}</span>
+            <span class="month-badge">{{ news.month_year|date:"M Y" }}</span>
+        </div>
+
+        {% if news.pdf_file %}
+            {% if news.cover_image %}
+            <!-- Cover image → click opens PDF -->
+            <a href="{{ news.pdf_file.url }}" target="_blank"
+               style="display:block;overflow:hidden;height:420px;position:relative;">
+                <img src="{{ news.cover_image.url }}"
+                     alt="{{ news.title }}"
+                     style="width:100%;height:100%;object-fit:cover;
+                            transition:transform .35s ease;display:block;">
+                <div style="position:absolute;inset:0;
+                            background:rgba(37,99,235,0);
+                            display:flex;align-items:center;justify-content:center;
+                            transition:background .25s;"
+                     onmouseover="this.style.background='rgba(37,99,235,.35)';
+                                  this.previousElementSibling.style.transform='scale(1.05)'"
+                     onmouseout="this.style.background='rgba(37,99,235,0)';
+                                 this.previousElementSibling.style.transform='scale(1)'">
+                    <span style="opacity:0;transition:opacity .25s;
+                                 background:rgba(255,255,255,.95);border-radius:50px;
+                                 padding:.55rem 1.25rem;display:flex;align-items:center;
+                                 gap:.5rem;font-size:.8rem;font-weight:700;color:var(--blue)"
+                          onmouseover="this.style.opacity='1';this.parentElement.style.background='rgba(37,99,235,.35)'"
+                          onmouseout="this.style.opacity='0';this.parentElement.style.background='rgba(37,99,235,0)'">
+                        <i class="bi bi-eye-fill"></i> View PDF
+                    </span>
+                </div>
+            </a>
+
+            {% else %}
+            <!-- No cover image → styled fallback card -->
+            <a href="{{ news.pdf_file.url }}" target="_blank"
+               style="display:flex;flex-direction:column;align-items:center;
+                      justify-content:center;height:420px;
+                      background:var(--surface2);text-decoration:none;
+                      gap:.85rem;transition:background .2s;
+                      position:relative;overflow:hidden;"
+               onmouseover="this.style.background='#1e2535'"
+               onmouseout="this.style.background='var(--surface2)'">
+                <div style="position:absolute;inset:0;
+                            background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);
+                            background-size:20px 20px;pointer-events:none"></div>
+                <i class="bi bi-file-earmark-pdf-fill"
+                   style="font-size:3rem;color:var(--blue);position:relative;z-index:1;
+                          filter:drop-shadow(0 4px 10px rgba(59,130,246,.3))"></i>
+                <div style="position:relative;z-index:1;text-align:center">
+                    <div style="font-family:var(--mono);font-size:.72rem;
+                                color:var(--blue);font-weight:700;letter-spacing:.04em">
+                        CLICK TO VIEW PDF
+                    </div>
+                    <div style="font-family:var(--mono);font-size:.63rem;
+                                color:var(--muted);margin-top:.25rem">
+                        {{ news.title|truncatewords:8 }}
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+
+        {% else %}
+            <div class="pdf-placeholder">
+                <i class="bi bi-file-earmark-x"></i>
+                <p>no PDF attached to this notice</p>
+            </div>
+        {% endif %}
+
+        <div class="newspaper-card-foot">
+            <span class="upload-date">
+                <i class="bi bi-clock"></i>
+                {{ news.uploaded_at|date:"d M, Y" }}
+            </span>
+            {% if news.pdf_file %}
+            <a href="{{ news.pdf_file.url }}" download class="pdf-dl-btn">
+                <i class="bi bi-download"></i> Download Copy
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+    {% empty %}
+    <div class="news-empty">
+        <i class="bi bi-newspaper"></i>
+        <p>no notices or newsletters uploaded yet</p>
+    </div>
+    {% endfor %}
+</div>
+    </div>
+
+    <!-- RIGHT — Wall of Fame -->
+    <div>
+        <div class="section-head">
+            <div class="section-head-left">
+                <div class="section-icon" style="background:rgba(245,166,35,.1);color:var(--accent)">
+                    <i class="bi bi-trophy-fill"></i>
+                </div>
+                <span class="section-title">Wall of Fame</span>
+            </div>
+            <span class="section-count"><span>{{ achievements|length }}</span> posted</span>
+        </div>
+
+        <div class="ach-grid">
+            {% for ach in achievements %}
+            <div class="ach-card">
+
+                {% if ach.image %}
+                    <img src="{{ ach.image.url }}" class="ach-img" alt="{{ ach.student_name }}">
+                {% else %}
+                    <div class="ach-img-placeholder">
+                        <span style="position:relative;z-index:1">🎓</span>
+                    </div>
+                {% endif %}
+
+                <div class="ach-body">
+                    <div class="ach-title">{{ ach.title }}</div>
+                    <div class="ach-student">{{ ach.student_name }}</div>
+                    <div class="ach-desc">{{ ach.description }}</div>
+                </div>
+
+                <div class="ach-footer">
+                    <i class="bi bi-award"></i>
+                    Awarded: {{ ach.date_awarded|date:"d M Y" }}
+                </div>
+
+            </div>
+            {% empty %}
+            <div class="ach-empty">
+                <i class="bi bi-award"></i>
+                <h5>No Achievements Yet</h5>
+                <p>check back later to see our students' amazing accomplishments</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% block page_title %}Events{% endblock %}
+
+{% block content %}
+<style>
+    /* ── PAGE HEADER ──────────────────────────────────── */
+    .page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        animation: fadeUp .35s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header-left h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -.04em;
+        color: var(--text);
+        margin-bottom: .25rem;
+    }
+
+    .page-header-left p {
+        font-size: .78rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    .event-count {
+        font-family: var(--mono);
+        font-size: .72rem;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .3rem .85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .event-count span { color: var(--accent); font-weight: 700; }
+
+    /* ── GRID ─────────────────────────────────────────── */
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+
+    @media (max-width: 1100px) { .events-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px)  { .events-grid { grid-template-columns: 1fr; } }
+
+    /* ── EVENT CARD ───────────────────────────────────── */
+    .event-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: border-color .2s, transform .2s, box-shadow .2s;
+        animation: fadeUp .4s ease both;
+    }
+
+    .event-card:nth-child(1) { animation-delay: .04s; }
+    .event-card:nth-child(2) { animation-delay: .08s; }
+    .event-card:nth-child(3) { animation-delay: .12s; }
+    .event-card:nth-child(4) { animation-delay: .16s; }
+    .event-card:nth-child(5) { animation-delay: .20s; }
+    .event-card:nth-child(6) { animation-delay: .24s; }
+
+    .event-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(0,0,0,.35);
+    }
+
+    /* Colored top strip — cycles through accent colors */
+    .event-card-strip {
+        height: 3px;
+        background: var(--strip-color, var(--accent));
+    }
+
+    /* Card top — fee badge + date */
+    .event-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem .75rem;
+    }
+
+    .fee-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+        background: rgba(245,166,35,.12);
+        color: var(--accent);
+        border: 1px solid rgba(245,166,35,.2);
+        border-radius: 20px;
+        font-family: var(--mono);
+        font-size: .7rem;
+        font-weight: 600;
+        padding: .22rem .65rem;
+    }
+
+    .date-chip {
+        font-family: var(--mono);
+        font-size: .65rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    /* Card body */
+    .event-card-body {
+        padding: 0 1.25rem 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-title {
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: -.025em;
+        color: var(--text);
+        margin-bottom: .5rem;
+        line-height: 1.3;
+    }
+
+    .event-desc {
+        font-size: .8rem;
+        color: var(--muted);
+        line-height: 1.6;
+        flex: 1;
+        margin-bottom: 1.1rem;
+    }
+
+    /* Card footer */
+    .event-card-footer {
+        padding: .85rem 1.25rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .event-meta {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .event-meta i { font-size: .75rem; }
+
+    .detail-btn {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        background: var(--text);
+        color: var(--bg);
+        border: none;
+        border-radius: 8px;
+        font-family: var(--display);
+        font-size: .78rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .18s;
+        white-space: nowrap;
+    }
+
+    .detail-btn:hover {
+        background: #fff;
+        color: #000;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(255,255,255,.1);
+    }
+
+    /* ── EMPTY STATE ──────────────────────────────────── */
+    .empty-state {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+        animation: fadeUp .4s ease both;
+    }
+
+    .empty-icon {
+        width: 64px; height: 64px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: grid; place-items: center;
+        font-size: 1.5rem;
+        color: var(--muted);
+        margin-bottom: 1.25rem;
+    }
+
+    .empty-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .4rem;
+    }
+
+    .empty-sub {
+        font-size: .78rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+</style>
+
+<!-- Strip colors cycle for visual variety -->
+{% with colors="#f5a623,#2cda82,#3b82f6,#e05c2a,#a78bfa,#f43f5e" %}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h2>Upcoming Events</h2>
+        <p>explore and participate in departmental activities</p>
+    </div>
+    <div class="event-count">
+        <span>{{ events|length }}</span> event{{ events|length|pluralize }} listed
+    </div>
+</div>
+
+<div class="events-grid">
+    {% for event in events %}
+
+    {# Cycle accent strip colors #}
+    {% with strip=colors|make_list %}
+    <div class="event-card" style="--strip-color: {% cycle '#f5a623' '#2cda82' '#3b82f6' '#e05c2a' '#a78bfa' '#f43f5e' %}">
+        <div class="event-card-strip"></div>
+
+        <div class="event-card-top">
+            <span class="fee-badge">
+                <i class="bi bi-currency-rupee"></i>{{ event.fee }}
+            </span>
+            <span class="date-chip">
+                <i class="bi bi-calendar3"></i>
+                {{ event.date|date:"d M" }}
+            </span>
+        </div>
+
+        <div class="event-card-body">
+            <div class="event-title">{{ event.title }}</div>
+            <p class="event-desc">{{ event.description|truncatewords:18 }}</p>
+        </div>
+
+        <div class="event-card-footer">
+            <div class="event-meta">
+                <i class="bi bi-clock"></i>
+                {{ event.date|date:"D, d M Y" }}
+            </div>
+            <a href="{% url 'event_detail' event.id %}" class="detail-btn">
+                View Details <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    {% endwith %}
+
+    {% empty %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <div class="empty-title">No Events Yet</div>
+        <div class="empty-sub">check back soon — new events will appear here</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endwith %}
+{% endblock %}

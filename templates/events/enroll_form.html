@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% block page_title %}Enroll — {{ activity.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .enroll-wrap {
+        min-height: calc(100vh - var(--topbar-h) - 4rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .enroll-card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .enroll-card::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* ── HEAD ─────────────────────────────────────────── */
+    .enroll-head {
+        padding: 1.5rem 1.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .event-crumb {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        margin-bottom: .65rem;
+    }
+
+    .event-crumb i { font-size: .7rem; }
+    .event-crumb span { color: var(--accent); }
+
+    .activity-name-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--text);
+        margin-bottom: .2rem;
+    }
+
+    .activity-meta {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin-top: .5rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-family: var(--mono);
+        font-size: .67rem;
+        color: var(--muted);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .2rem .6rem;
+    }
+
+    .meta-chip i { font-size: .72rem; }
+    .meta-chip.group { color: var(--blue); border-color: rgba(59,130,246,.25); background: rgba(59,130,246,.07); }
+
+    /* ── BODY ─────────────────────────────────────────── */
+    .enroll-body { padding: 1.5rem 1.75rem 1.75rem; }
+
+    /* ── FIELD ────────────────────────────────────────── */
+    .field { margin-bottom: 1.25rem; }
+
+    .field-label {
+        display: block;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: var(--mono);
+        margin-bottom: .45rem;
+    }
+
+    .field-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .field-icon {
+        position: absolute;
+        left: .9rem;
+        color: var(--muted);
+        font-size: .95rem;
+        pointer-events: none;
+        transition: color .15s;
+    }
+
+    .field-input {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--text);
+        font-family: var(--display);
+        font-size: .875rem;
+        font-weight: 500;
+        padding: .72rem .9rem .72rem 2.5rem;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+    }
+
+    .field-input::placeholder { color: var(--muted); }
+
+    .field-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(245,166,35,.12);
+    }
+
+    .field-wrap:focus-within .field-icon { color: var(--accent); }
+
+    /* ── FEE NOTICE ───────────────────────────────────── */
+    .fee-notice {
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .85rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fee-notice.paid {
+        background: rgba(44,218,130,.06);
+        border: 1px solid rgba(44,218,130,.2);
+    }
+
+    .fee-notice.unpaid {
+        background: rgba(245,166,35,.06);
+        border: 1px solid rgba(245,166,35,.2);
+    }
+
+    .fee-notice-icon {
+        width: 36px; height: 36px;
+        border-radius: 9px;
+        display: grid; place-items: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .fee-notice.paid   .fee-notice-icon { background: rgba(44,218,130,.12); color: var(--green); }
+    .fee-notice.unpaid .fee-notice-icon { background: rgba(245,166,35,.12); color: var(--accent); }
+
+    .fee-notice-title {
+        font-size: .82rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .2rem;
+    }
+
+    .fee-notice.paid   .fee-notice-title { color: var(--green); }
+    .fee-notice.unpaid .fee-notice-title { color: var(--accent); }
+
+    .fee-notice-desc {
+        font-size: .75rem;
+        color: var(--muted);
+        line-height: 1.55;
+        font-family: var(--mono);
+    }
+
+    /* ── SUBMIT ───────────────────────────────────────── */
+    .submit-btn {
+        width: 100%;
+        padding: .82rem;
+        border: none;
+        border-radius: 9px;
+        font-family: var(--display);
+        font-size: .92rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        cursor: pointer;
+        transition: all .2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+    }
+
+    .submit-btn.free {
+        background: var(--green);
+        color: #000;
+    }
+
+    .submit-btn.free:hover {
+        background: #3eeea0;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(44,218,130,.25);
+    }
+
+    .submit-btn.pay {
+        background: var(--accent);
+        color: #000;
+    }
+
+    .submit-btn.pay:hover {
+        background: #ffc04a;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(245,166,35,.3);
+    }
+
+    .submit-btn:active { transform: translateY(0); }
+
+    /* ── SECURITY HINT ────────────────────────────────── */
+    .secure-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        margin-top: .85rem;
+        font-family: var(--mono);
+        font-size: .65rem;
+        color: var(--muted);
+    }
+
+    .secure-hint i { font-size: .7rem; color: var(--green); }
+</style>
+
+<div class="enroll-wrap">
+    <div class="enroll-card">
+
+        <!-- Head -->
+        <div class="enroll-head">
+            <div class="event-crumb">
+                <i class="bi bi-calendar-event"></i>
+                <span>{{ activity.event.title }}</span>
+                <i class="bi bi-chevron-right"></i>
+                Enroll
+            </div>
+            <div class="activity-name-title">{{ activity.name }}</div>
+            <div class="activity-meta">
+                <span class="meta-chip">
+                    <i class="bi bi-currency-rupee"></i>
+                    {{ activity.event.fee }} entry fee
+                </span>
+                {% if activity.category == 'group' %}
+                <span class="meta-chip group">
+                    <i class="bi bi-people-fill"></i>
+                    group activity
+                </span>
+                {% else %}
+                <span class="meta-chip">
+                    <i class="bi bi-person"></i>
+                    individual
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="enroll-body">
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                <!-- Team name (group activities only) -->
+                {% if activity.category == 'group' %}
+                <div class="field">
+                    <label class="field-label" for="id_team_name">Team / Group Name</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-people field-icon"></i>
+                        <input
+                            type="text"
+                            id="id_team_name"
+                            name="team_name"
+                            class="field-input"
+                            placeholder="Enter your team name"
+                            required
+                        >
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Fee status notice -->
+                {% if already_paid %}
+                <div class="fee-notice paid">
+                    <div class="fee-notice-icon"><i class="bi bi-patch-check-fill"></i></div>
+                    <div>
+                        <div class="fee-notice-title">Fee Already Paid!</div>
+                        <div class="fee-notice-desc">
+                            You've already paid the entry fee for this event.
+                            Your participation in this activity is free.
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="fee-notice unpaid">
+                    <div class="fee-notice-icon"><i class="bi bi-wallet2"></i></div>
+                    <div>
+                        <div class="fee-notice-title">Entry Fee: ₹{{ activity.event.fee }}</div>
+                        <div class="fee-notice-desc">
+                            Paying this fee gives you full event access and
+                            lets you join any other activities for free.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Submit -->
+                {% if already_paid %}
+                <button type="submit" class="submit-btn free">
+                    <i class="bi bi-check-circle-fill"></i> Confirm Participation
+                </button>
+                {% else %}
+                <button type="submit" class="submit-btn pay">
+                    <i class="bi bi-lock-fill"></i> Pay ₹{{ activity.event.fee }} &amp; Enroll
+                </button>
+                {% endif %}
+
+                <div class="secure-hint">
+                    <i class="bi bi-shield-check"></i>
+                    secured &amp; encrypted transaction
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

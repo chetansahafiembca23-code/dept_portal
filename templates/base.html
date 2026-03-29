@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CA-DEPT-HUB | FIEM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    /* ═══════════════════════════════════════════════
+       CSS VARIABLES & RESET
+    ═══════════════════════════════════════════════ */
+    :root {
+        --blue-deep:  #1e3a8a;
+        --blue:       #2563eb;
+        --blue-mid:   #3b82f6;
+        --blue-lt:    #93c5fd;
+        --blue-pale:  #dbeafe;
+        --blue-ghost: rgba(37,99,235,.08);
+        --green-deep: #14532d;
+        --green:      #16a34a;
+        --green-lt:   #4ade80;
+        --yellow:     #eab308;
+        --yellow-lt:  #fde047;
+        --yellow-pale:#fefce8;
+        --white:      #ffffff;
+        --off-white:  #f8faff;
+        --gray-50:    #f0f4ff;
+        --gray-100:   #e0e7ff;
+        --gray-200:   #c7d2fe;
+        --gray-500:   #6b7280;
+        --gray-700:   #374151;
+        --text:       #0f172a;
+        --text2:      #334155;
+        --muted:      #64748b;
+        --glass:      rgba(255,255,255,0.7);
+        --glass-2:    rgba(255,255,255,0.5);
+        --glass-bd:   rgba(255,255,255,0.8);
+        --shadow-sm:  0 1px 3px rgba(37,99,235,.06), 0 1px 2px rgba(37,99,235,.04);
+        --shadow:     0 4px 20px rgba(37,99,235,.10);
+        --shadow-lg:  0 10px 40px rgba(37,99,235,.15);
+        --mono:       'JetBrains Mono', monospace;
+        --sans:       'Plus Jakarta Sans', sans-serif;
+        --topbar-h:   68px;
+        --sidebar-w:  300px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+        font-family: var(--sans);
+        background: var(--off-white);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* Gradient mesh background */
+    body::before {
+        content: '';
+        position: fixed; inset: 0;
+        background:
+            radial-gradient(ellipse at 0% 0%, rgba(37,99,235,.07) 0%, transparent 50%),
+            radial-gradient(ellipse at 100% 100%, rgba(22,163,74,.05) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(234,179,8,.04) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════════════ */
+    .topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--topbar-h);
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--glass-bd);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        z-index: 500;
+    }
+
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        flex-shrink: 0;
+    }
+
+    /* College logo */
+    .college-logo {
+        height: 42px;
+        width: auto;
+        object-fit: contain;
+        border-radius: 6px;
+        filter: drop-shadow(0 1px 4px rgba(0,0,0,.15));
+    }
+
+    /* CA Dept monogram */
+    .ca-monogram {
+        width: 42px; height: 42px;
+        background: linear-gradient(135deg, var(--blue), var(--green));
+        border-radius: 10px;
+        display: grid; place-items: center;
+        font-family: var(--sans);
+        font-size: .82rem;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: -.03em;
+        flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(37,99,235,.35);
+        position: relative;
+        overflow: hidden;
+        transition: transform .2s;
+    }
+
+    .ca-monogram::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,.25), transparent);
+    }
+
+    .ca-monogram:hover { transform: scale(1.06) rotate(-3deg); }
+
+    .topbar-title { line-height: 1.15; }
+
+    .topbar-name {
+        font-size: .9rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -.02em;
+        display: block;
+    }
+
+    .topbar-dept {
+        font-size: .6rem;
+        font-family: var(--mono);
+        color: var(--blue);
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .topbar-brand {
+        font-size: 1rem;
+        font-weight: 900;
+        letter-spacing: -.03em;
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue), var(--green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-right: .25rem;
+    }
+
+    /* Sidebar toggle — only way to open sidebar */
+    .sidebar-toggle {
+        width: 42px; height: 42px;
+        background: var(--glass-2);
+        border: 1.5px solid var(--blue-pale);
+        border-radius: 10px;
+        display: grid; place-items: center;
+        cursor: pointer;
+        color: var(--blue);
+        font-size: 1.15rem;
+        transition: all .2s;
+        backdrop-filter: blur(8px);
+        flex-shrink: 0;
+    }
+
+    .sidebar-toggle:hover {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(37,99,235,.35);
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 520px) {
+        .topbar-title { display: none; }
+        .topbar-brand  { font-size: .85rem; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDEBAR — slides from RIGHT, click-only
+    ═══════════════════════════════════════════════ */
+    .sidebar-overlay {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(15,23,42,.3);
+        backdrop-filter: blur(4px);
+        z-index: 600;
+        opacity: 0;
+        transition: opacity .3s;
+    }
+    .sidebar-overlay.show { display: block; opacity: 1; }
+
+    .sidebar {
+        position: fixed;
+        top: 0; right: 0;
+        width: var(--sidebar-w);
+        height: 100vh;
+        background: var(--glass);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border-left: 1px solid var(--glass-bd);
+        box-shadow: -8px 0 48px rgba(37,99,235,.15);
+        z-index: 700;
+        transform: translateX(100%);
+        transition: transform .35s cubic-bezier(.77,0,.18,1);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb {
+        background: var(--blue-pale);
+        border-radius: 10px;
+    }
+
+    .sidebar-head {
+        padding: 1.1rem 1.25rem;
+        border-bottom: 1px solid rgba(37,99,235,.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255,255,255,.5);
+        flex-shrink: 0;
+    }
+
+    .sidebar-brand-row {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .sidebar-brand-name {
+        font-size: .95rem;
+        font-weight: 800;
+        color: var(--blue-deep);
+        letter-spacing: -.02em;
+    }
+
+    .sidebar-close {
+        width: 30px; height: 30px;
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.2);
+        border-radius: 8px;
+        display: grid; place-items: center;
+        cursor: pointer;
+        color: #ef4444;
+        font-size: .85rem;
+        transition: all .15s;
+    }
+    .sidebar-close:hover { background: #ef4444; color: #fff; }
+
+    .sidebar-body { flex: 1; padding: 1rem .85rem; }
+
+    .sb-section-label {
+        font-family: var(--mono);
+        font-size: .58rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 0 .6rem;
+        margin-bottom: .4rem;
+        margin-top: 1.1rem;
+        display: block;
+    }
+    .sb-section-label:first-child { margin-top: 0; }
+
+    .sb-link {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        padding: .6rem .75rem;
+        border-radius: 10px;
+        color: var(--text2);
+        text-decoration: none;
+        font-size: .85rem;
+        font-weight: 600;
+        transition: all .18s;
+        margin-bottom: .1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sb-link i { font-size: .9rem; width: 18px; text-align: center; flex-shrink: 0; }
+
+    .sb-link:hover {
+        background: rgba(37,99,235,.08);
+        color: var(--blue);
+        transform: translateX(3px);
+    }
+
+    .sb-link.active {
+        background: var(--blue-ghost);
+        color: var(--blue);
+        font-weight: 700;
+    }
+
+    .sb-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 15%; height: 70%;
+        width: 3px;
+        background: var(--blue);
+        border-radius: 0 3px 3px 0;
+    }
+
+    .sb-link.danger { color: #ef4444; }
+    .sb-link.danger:hover { background: rgba(239,68,68,.08); color: #dc2626; transform: translateX(3px); }
+
+    .sb-divider {
+        border: none;
+        border-top: 1px solid rgba(37,99,235,.1);
+        margin: .5rem .6rem;
+    }
+
+    .sidebar-user {
+        padding: 1rem 1.1rem;
+        border-top: 1px solid rgba(37,99,235,.1);
+        background: rgba(255,255,255,.5);
+        flex-shrink: 0;
+    }
+
+    .user-row {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .5rem .6rem;
+        border-radius: 10px;
+        transition: background .15s;
+        cursor: default;
+    }
+    .user-row:hover { background: rgba(37,99,235,.06); }
+
+    .user-avatar {
+        width: 34px; height: 34px;
+        background: linear-gradient(135deg, var(--blue), var(--green));
+        border-radius: 50%;
+        display: grid; place-items: center;
+        font-size: .72rem;
+        font-weight: 800;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .user-name { font-size: .82rem; font-weight: 700; color: var(--text); }
+    .user-role { font-size: .65rem; font-family: var(--mono); color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════ */
+    .main {
+        margin-top: var(--topbar-h);
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - var(--topbar-h));
+    }
+
+    .page-body {
+        padding: 2rem;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .page-body { padding: 1.25rem; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       FLASH MESSAGES
+    ═══════════════════════════════════════════════ */
+    .alert-glass {
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border-radius: 10px;
+        padding: .85rem 1.15rem;
+        margin-bottom: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: .85rem;
+        font-weight: 500;
+        border: 1px solid;
+        animation: slideIn .3s ease both;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-success { border-color: rgba(22,163,74,.3); color: #166534; background: rgba(220,252,231,.7); }
+    .alert-error, .alert-danger { border-color: rgba(239,68,68,.3); color: #991b1b; background: rgba(254,226,226,.7); }
+    .alert-warning { border-color: rgba(234,179,8,.3); color: #854d0e; background: rgba(254,249,195,.7); }
+    .alert-info { border-color: rgba(37,99,235,.3); color: #1e40af; background: rgba(219,234,254,.7); }
+
+    .alert-close-btn {
+        background: none; border: none;
+        cursor: pointer; font-size: .9rem;
+        color: currentColor; opacity: .6;
+        transition: opacity .15s; padding: 0; flex-shrink: 0;
+    }
+    .alert-close-btn:hover { opacity: 1; }
+
+    /* ═══════════════════════════════════════════════
+       GLASSMORPHISM UTILITY CLASSES
+    ═══════════════════════════════════════════════ */
+    .glass-card {
+        background: var(--glass);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-bd);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* ═══════════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════════ */
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp .4s ease both; }
+    .fade-up-1 { animation: fadeUp .4s ease .06s both; }
+    .fade-up-2 { animation: fadeUp .4s ease .12s both; }
+    .fade-up-3 { animation: fadeUp .4s ease .18s both; }
+    .fade-up-4 { animation: fadeUp .4s ease .24s both; }
+    </style>
+</head>
+<body>
+
+<!-- ════ TOPBAR ════════════════════════════════════════════ -->
+<nav class="topbar">
+    <div class="topbar-left">
+        <!-- College Logo -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7d/FIEM_Logo.jpg"
+             alt="FIEM" class="college-logo"
+             onerror="this.style.display='none'">
+        <!-- CA Monogram -->
+         <img src="/media/logo/ca.jpeg"
+             alt="CA" class="college-logo"
+             onerror="this.style.display='none'">
+        <!-- Names -->
+        <div class="topbar-title">
+            <span class="topbar-name">FIEM</span>
+            <span class="topbar-dept">Dept. of Computer Application</span>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <span class="topbar-brand">CA‑DEPT‑HUB</span>
+        <!-- Click to open sidebar -->
+        <div class="sidebar-toggle" id="sidebarToggle" title="Menu">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+</nav>
+
+<!-- ════ SIDEBAR OVERLAY ═══════════════════════════════════ -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ════ SIDEBAR ═══════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-head">
+        <div class="sidebar-brand-row">
+            <div class="ca-monogram" style="width:30px;height:30px;font-size:.7rem;border-radius:7px">CA</div>
+            <span class="sidebar-brand-name">CA‑DEPT‑HUB</span>
+        </div>
+        <div class="sidebar-close" id="sidebarClose"><i class="bi bi-x-lg"></i></div>
+    </div>
+
+    <div class="sidebar-body">
+
+        <span class="sb-section-label">Explore</span>
+        <a href="{% url 'home' %}" class="sb-link"><i class="bi bi-house-fill"></i> Home</a>
+        <a href="{% url 'event_list' %}" class="sb-link"><i class="bi bi-calendar-event-fill"></i> All Events</a>
+        <a href="{% url 'community' %}" class="sb-link"><i class="bi bi-newspaper"></i> News & Notices</a>
+        <a href="{% url 'common_gallery' %}" class="sb-link"><i class="bi bi-images"></i> Photo Gallery</a>
+
+        <hr class="sb-divider">
+
+        {% if not user.is_authenticated %}
+        <span class="sb-section-label">Account</span>
+        <a href="{% url 'login' %}" class="sb-link"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+        <a href="{% url 'register' %}" class="sb-link"><i class="bi bi-person-plus"></i> Register</a>
+
+        {% elif user.role == 'admin' or user.is_superuser %}
+        <span class="sb-section-label">Admin Panel</span>
+        <a href="{% url 'admin_dashboard' %}" class="sb-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="/admin/events/event/" class="sb-link" target="_blank"><i class="bi bi-calendar-event"></i> Manage Events</a>
+        <a href="/admin/core/monthlynewspaper/" class="sb-link" target="_blank"><i class="bi bi-upload"></i> Upload Newspaper</a>
+        <a href="/admin/events/enrollment/" class="sb-link" target="_blank"><i class="bi bi-people"></i> Enrollments</a>
+        <a href="/admin/core/achievement/" class="sb-link" target="_blank"><i class="bi bi-trophy"></i> Achievements</a>
+        <a href="/admin/" class="sb-link" target="_blank"><i class="bi bi-gear"></i> Django Admin</a>
+        <hr class="sb-divider">
+        <a href="{% url 'logout' %}" class="sb-link danger"><i class="bi bi-box-arrow-left"></i> Logout</a>
+
+        {% else %}
+        <span class="sb-section-label">Student Portal</span>
+        <a href="{% url 'profile' %}" class="sb-link"><i class="bi bi-person-circle"></i> My Profile</a>
+        <a href="{% url 'dashboard' %}" class="sb-link"><i class="bi bi-ticket-perforated"></i> My Enrollments</a>
+        <hr class="sb-divider">
+        <a href="{% url 'logout' %}" class="sb-link danger"><i class="bi bi-box-arrow-left"></i> Logout</a>
+        {% endif %}
+
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="sidebar-user">
+        <div class="user-row">
+            <div class="user-avatar">{{ user.username|slice:":2"|upper }}</div>
+            <div>
+                <div class="user-name">{{ user.username }}</div>
+                <div class="user-role">
+                    {% if user.is_superuser %}superuser
+                    {% elif user.role == 'admin' %}dept.admin
+                    {% else %}student · {{ user.department }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</aside>
+
+<!-- ════ MAIN ═══════════════════════════════════════════════ -->
+<div class="main">
+    <div class="page-body">
+
+        <!-- Flash messages -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert-glass alert-{{ message.tags }}">
+            <span>{{ message }}</span>
+            <button class="alert-close-btn" onclick="this.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const toggle  = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const closeBtn= document.getElementById('sidebarClose');
+
+    function openSidebar()  {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', openSidebar);
+    closeBtn.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    // Mark active nav link
+    document.querySelectorAll('.sb-link').forEach(link => {
+        try {
+            if (link.href && new URL(link.href).pathname === window.location.pathname) {
+                link.classList.add('active');
+            }
+        } catch(e) {}
+    });
+</script>
+
+</body>
+</html>

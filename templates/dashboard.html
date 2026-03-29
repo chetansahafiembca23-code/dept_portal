@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% block page_title %}Overview{% endblock %}
+
+{% block content %}
+<style>
+
+    /* ── HERO WELCOME ─────────────────────────────────── */
+    .welcome-hero {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 1.75rem;
+        position: relative;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* dot grid bg */
+    .welcome-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(var(--border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 36px 36px;
+        opacity: .3;
+        pointer-events: none;
+    }
+
+    /* amber glow */
+    .welcome-hero::after {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(245,166,35,.15) 0%, transparent 65%);
+        pointer-events: none;
+    }
+
+    .welcome-hero-inner {
+        position: relative;
+        z-index: 1;
+        padding: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .welcome-avatar {
+        width: 64px; height: 64px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-radius: 50%;
+        display: grid; place-items: center;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #000;
+        flex-shrink: 0;
+        border: 3px solid rgba(245,166,35,.3);
+    }
+
+    .welcome-text { flex: 1; min-width: 200px; }
+
+    .welcome-greeting {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--accent);
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        margin-bottom: .4rem;
+    }
+
+    .welcome-name {
+        font-size: 1.7rem;
+        font-weight: 800;
+        letter-spacing: -.04em;
+        color: var(--text);
+        margin-bottom: .5rem;
+    }
+
+    .welcome-desc {
+        font-size: .85rem;
+        color: var(--muted);
+        line-height: 1.65;
+        max-width: 520px;
+    }
+
+    .welcome-divider {
+        width: 1px;
+        height: 80px;
+        background: var(--border);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 700px) {
+        .welcome-divider { display: none; }
+        .welcome-hero-inner { padding: 1.75rem; }
+        .welcome-name { font-size: 1.3rem; }
+    }
+
+    /* ── STAT CARDS ───────────────────────────────────── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    @media (max-width: 700px) { .stats-grid { grid-template-columns: 1fr; } }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem 1.25rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: border-color .2s, transform .2s;
+        animation: fadeUp .4s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: .08s; }
+    .stat-card:nth-child(2) { animation-delay: .13s; }
+    .stat-card:nth-child(3) { animation-delay: .18s; }
+
+    .stat-card:hover {
+        border-color: var(--card-accent, var(--accent));
+        transform: translateY(-2px);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--card-accent, var(--accent));
+        opacity: .6;
+    }
+
+    .stat-icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: grid; place-items: center;
+        font-size: 1.1rem;
+        margin: 0 auto .85rem;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -.05em;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: .35rem;
+    }
+
+    .stat-label {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .07em;
+    }
+
+    /* ── QUICK ACTIONS ────────────────────────────────── */
+    .actions-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        animation: fadeUp .4s ease .22s both;
+    }
+
+    .panel-head {
+        padding: .9rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .panel-head-icon {
+        width: 26px; height: 26px;
+        border-radius: 6px;
+        display: grid; place-items: center;
+        font-size: .78rem;
+    }
+
+    .panel-head-title {
+        font-size: .88rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .75rem;
+        padding: 1.1rem;
+    }
+
+    @media (max-width: 600px) { .actions-grid { grid-template-columns: 1fr 1fr; } }
+
+    .action-tile {
+        display: flex;
+        flex-direction: column;
+        gap: .45rem;
+        padding: 1rem;
+        border-radius: 9px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        transition: all .18s;
+    }
+
+    .action-tile:hover {
+        border-color: var(--accent);
+        background: rgba(245,166,35,.05);
+        transform: translateY(-2px);
+    }
+
+    .action-tile:hover .action-tile-icon {
+        background: var(--accent);
+        color: #000;
+        border-color: var(--accent);
+    }
+
+    .action-tile-icon {
+        width: 32px; height: 32px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: .88rem;
+        color: var(--muted);
+        transition: all .18s;
+    }
+
+    .action-tile-name {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .action-tile-desc {
+        font-size: .67rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+</style>
+
+<!-- WELCOME HERO -->
+<div class="welcome-hero">
+    <div class="welcome-hero-inner">
+        <div class="welcome-avatar">
+            {{ request.user.username|slice:":2"|upper }}
+        </div>
+        <div class="welcome-text">
+            <div class="welcome-greeting">
+                <i class="bi bi-hand-wave"></i> &nbsp;logged in as student
+            </div>
+            <div class="welcome-name">
+                Welcome, {{ request.user.username }}!
+            </div>
+            <div class="welcome-desc">
+                This is your Department Portal dashboard. Here you can track
+                your event enrollments and achievements.
+            </div>
+        </div>
+        <div class="welcome-divider"></div>
+        <div style="text-align:center;flex-shrink:0;">
+            <div style="font-family:var(--mono);font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Portal Status</div>
+            <div style="display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.72rem;color:var(--green);background:rgba(44,218,130,.08);border:1px solid rgba(44,218,130,.2);border-radius:20px;padding:.3rem .75rem;">
+                <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s ease infinite"></span>
+                Active
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+    <div class="stat-card" style="--card-accent: var(--accent)">
+        <div class="stat-icon" style="background:rgba(245,166,35,.1);color:var(--accent)">
+            <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Enrolled Events</div>
+    </div>
+    <div class="stat-card" style="--card-accent: var(--blue)">
+        <div class="stat-icon" style="background:rgba(59,130,246,.1);color:var(--blue)">
+            <i class="bi bi-lightning-charge-fill"></i>
+        </div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Activities</div>
+    </div>
+    <div class="stat-card" style="--card-accent: var(--green)">
+        <div class="stat-icon" style="background:rgba(44,218,130,.1);color:var(--green)">
+            <i class="bi bi-patch-check-fill"></i>
+        </div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Certificates</div>
+    </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="actions-panel">
+    <div class="panel-head">
+        <div class="panel-head-icon" style="background:rgba(245,166,35,.1);color:var(--accent)">
+            <i class="bi bi-grid-fill"></i>
+        </div>
+        <span class="panel-head-title">Quick Actions</span>
+    </div>
+    <div class="actions-grid">
+        <a href="{% url 'home' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-compass"></i></div>
+            <div class="action-tile-name">Browse Events</div>
+            <div class="action-tile-desc">explore & enroll</div>
+        </a>
+        <a href="{% url 'dashboard' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-ticket-perforated"></i></div>
+            <div class="action-tile-name">My Enrollments</div>
+            <div class="action-tile-desc">view all tickets</div>
+        </a>
+        <a href="{% url 'profile' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-person-gear"></i></div>
+            <div class="action-tile-name">Edit Profile</div>
+            <div class="action-tile-desc">update your info</div>
+        </a>
+        <a href="{% url 'community' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-newspaper"></i></div>
+            <div class="action-tile-name">Notice Board</div>
+            <div class="action-tile-desc">news & updates</div>
+        </a>
+        <a href="{% url 'community' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-trophy"></i></div>
+            <div class="action-tile-name">Wall of Fame</div>
+            <div class="action-tile-desc">achievements</div>
+        </a>
+        <a href="{% url 'logout' %}" class="action-tile">
+            <div class="action-tile-icon"><i class="bi bi-box-arrow-left"></i></div>
+            <div class="action-tile-name">Logout</div>
+            <div class="action-tile-desc">sign out safely</div>
+        </a>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: .5; transform: scale(1.4); }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% block page_title %}Enrollment Successful{% endblock %}
+
+{% block content %}
+<style>
+    .success-wrap {
+        min-height: calc(100vh - var(--topbar-h) - 4rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .success-card {
+        width: 100%;
+        max-width: 500px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeUp .45s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Green top bar for success */
+    .success-card::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--green), #0ea879);
+    }
+
+    /* ── SUCCESS HEAD ─────────────────────────────────── */
+    .success-head {
+        padding: 2rem 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .check-ring {
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        background: rgba(44,218,130,.1);
+        border: 2px solid rgba(44,218,130,.25);
+        display: grid; place-items: center;
+        margin: 0 auto 1rem;
+        font-size: 1.6rem;
+        color: var(--green);
+        animation: popIn .5s cubic-bezier(.34,1.56,.64,1) .15s both;
+    }
+
+    @keyframes popIn {
+        from { transform: scale(.4); opacity: 0; }
+        to   { transform: scale(1);  opacity: 1; }
+    }
+
+    .success-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--text);
+        margin-bottom: .3rem;
+    }
+
+    .success-sub {
+        font-size: .75rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    /* ── DETAIL TABLE ─────────────────────────────────── */
+    .detail-block {
+        margin: 1.5rem 1.75rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        padding: .75rem 1.1rem;
+        border-bottom: 1px solid var(--border);
+        gap: .75rem;
+    }
+
+    .detail-row:last-child { border-bottom: none; }
+
+    .detail-icon {
+        width: 28px; height: 28px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: .8rem;
+        color: var(--muted);
+        flex-shrink: 0;
+    }
+
+    .detail-key {
+        font-size: .68rem;
+        font-family: var(--mono);
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        min-width: 68px;
+        flex-shrink: 0;
+    }
+
+    .detail-val {
+        font-size: .875rem;
+        font-weight: 700;
+        color: var(--text);
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Highlight event name in accent */
+    .detail-row:first-child .detail-val { color: var(--accent); }
+
+    /* ── ACTIONS ──────────────────────────────────────── */
+    .action-stack {
+        padding: 0 1.75rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .act-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .72rem 1.25rem;
+        border-radius: 9px;
+        font-family: var(--display);
+        font-size: .875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .18s;
+        text-decoration: none;
+        border: none;
+        width: 100%;
+    }
+
+    .act-primary {
+        background: var(--text);
+        color: var(--bg);
+    }
+
+    .act-primary:hover {
+        background: #fff;
+        color: #000;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(255,255,255,.12);
+    }
+
+    .act-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .act-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(245,166,35,.06);
+        transform: translateY(-1px);
+    }
+
+    .act-ghost {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+
+    .act-ghost:hover {
+        border-color: var(--border);
+        color: var(--text);
+        background: var(--surface2);
+    }
+
+    /* ── CONFETTI STRIP ───────────────────────────────── */
+    .confetti-strip {
+        display: flex;
+        justify-content: center;
+        gap: .3rem;
+        padding: .75rem 0 0;
+    }
+
+    .conf-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        animation: confettiBounce 1.2s ease infinite;
+    }
+
+    .conf-dot:nth-child(1) { background: var(--accent);  animation-delay: 0s; }
+    .conf-dot:nth-child(2) { background: var(--green);   animation-delay: .15s; }
+    .conf-dot:nth-child(3) { background: var(--blue);    animation-delay: .3s; }
+    .conf-dot:nth-child(4) { background: var(--accent2); animation-delay: .45s; }
+    .conf-dot:nth-child(5) { background: var(--green);   animation-delay: .6s; }
+
+    @keyframes confettiBounce {
+        0%, 100% { transform: translateY(0); opacity: .5; }
+        50%       { transform: translateY(-5px); opacity: 1; }
+    }
+</style>
+
+<div class="success-wrap">
+    <div class="success-card">
+
+        <!-- Head -->
+        <div class="success-head">
+            <div class="confetti-strip">
+                <div class="conf-dot"></div>
+                <div class="conf-dot"></div>
+                <div class="conf-dot"></div>
+                <div class="conf-dot"></div>
+                <div class="conf-dot"></div>
+            </div>
+            <div class="check-ring"><i class="bi bi-check-lg"></i></div>
+            <div class="success-title">Enrollment Successful!</div>
+            <div class="success-sub">you're now registered for the following activity</div>
+        </div>
+
+        <!-- Detail rows -->
+        <div class="detail-block">
+            <div class="detail-row">
+                <div class="detail-icon"><i class="bi bi-calendar-event"></i></div>
+                <span class="detail-key">Event</span>
+                <span class="detail-val">{{ enrollment.event.title }}</span>
+            </div>
+            <div class="detail-row">
+                <div class="detail-icon"><i class="bi bi-lightning-charge"></i></div>
+                <span class="detail-key">Activity</span>
+                <span class="detail-val">{{ enrollment.activity.name }}</span>
+            </div>
+            <div class="detail-row">
+                <div class="detail-icon"><i class="bi bi-person"></i></div>
+                <span class="detail-key">Student</span>
+                <span class="detail-val">{{ enrollment.user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <div class="detail-icon"><i class="bi bi-hash"></i></div>
+                <span class="detail-key">Roll No</span>
+                <span class="detail-val">{{ enrollment.user.roll_number }}</span>
+            </div>
+            {% if enrollment.team_name %}
+            <div class="detail-row">
+                <div class="detail-icon"><i class="bi bi-people"></i></div>
+                <span class="detail-key">Team</span>
+                <span class="detail-val">{{ enrollment.team_name }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-stack">
+            <a href="{% url 'dashboard' %}" class="act-btn act-primary">
+                <i class="bi bi-speedometer2"></i> Go to Dashboard
+            </a>
+            <a href="{% url 'download_receipt' enrollment.id %}" class="act-btn act-outline">
+                <i class="bi bi-download"></i> Download PDF Receipt
+            </a>
+            <button onclick="window.print()" class="act-btn act-ghost">
+                <i class="bi bi-printer"></i> Print Confirmation
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

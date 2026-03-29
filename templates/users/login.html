@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% block page_title %}Login{% endblock %}
+
+{% block content %}
+<style>
+    .login-wrap {
+        min-height: calc(100vh - var(--topbar-h) - 4rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* ── HEAD ─────────────────────────────────────────── */
+    .login-head {
+        padding: 2rem 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .login-icon {
+        width: 50px; height: 50px;
+        background: rgba(245,166,35,.12);
+        border-radius: 14px;
+        display: grid; place-items: center;
+        font-size: 1.4rem;
+        color: var(--accent);
+        margin: 0 auto .9rem;
+    }
+
+    .login-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--text);
+        margin-bottom: .3rem;
+    }
+
+    .login-sub {
+        font-size: .75rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    /* ── BODY ─────────────────────────────────────────── */
+    .login-body { padding: 1.75rem 2rem 2rem; }
+
+    /* ── FIELDS ───────────────────────────────────────── */
+    .field { margin-bottom: 1.1rem; }
+
+    .field-label {
+        display: block;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: var(--mono);
+        margin-bottom: .45rem;
+    }
+
+    .field-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .field-icon {
+        position: absolute;
+        left: .9rem;
+        color: var(--muted);
+        font-size: .95rem;
+        pointer-events: none;
+        transition: color .15s;
+    }
+
+    .field-input {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--text);
+        font-family: var(--display);
+        font-size: .875rem;
+        font-weight: 500;
+        padding: .72rem .9rem .72rem 2.5rem;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+    }
+
+    .field-input::placeholder { color: var(--muted); }
+
+    .field-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(245,166,35,.12);
+    }
+
+    .field-wrap:focus-within .field-icon { color: var(--accent); }
+
+    /* Password toggle */
+    .pw-toggle {
+        position: absolute;
+        right: .9rem;
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: .95rem;
+        padding: 0;
+        line-height: 1;
+        transition: color .15s;
+    }
+
+    .pw-toggle:hover { color: var(--text); }
+
+    /* ── DIVIDER ──────────────────────────────────────── */
+    .or-divider {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin: 1.35rem 0;
+        font-size: .68rem;
+        font-family: var(--mono);
+        color: var(--muted);
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    /* ── SUBMIT ───────────────────────────────────────── */
+    .submit-btn {
+        width: 100%;
+        padding: .78rem;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 9px;
+        font-family: var(--display);
+        font-size: .9rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        cursor: pointer;
+        transition: all .2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+    }
+
+    .submit-btn:hover {
+        background: #ffc04a;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(245,166,35,.3);
+    }
+
+    .submit-btn:active { transform: translateY(0); }
+
+    /* ── REGISTER LINK ────────────────────────────────── */
+    .register-link {
+        text-align: center;
+        margin-top: 1.25rem;
+        font-size: .78rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    .register-link a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .register-link a:hover { text-decoration: underline; }
+
+    /* ── STATS ROW (decorative trust signals) ─────────── */
+    .trust-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--border);
+    }
+
+    .trust-item {
+        padding: .9rem .5rem;
+        text-align: center;
+        border-right: 1px solid var(--border);
+    }
+
+    .trust-item:last-child { border-right: none; }
+
+    .trust-val {
+        font-size: .95rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -.02em;
+    }
+
+    .trust-lbl {
+        font-size: .62rem;
+        color: var(--muted);
+        font-family: var(--mono);
+        margin-top: .15rem;
+    }
+</style>
+
+<div class="login-wrap">
+    <div class="login-card">
+
+        <!-- Head -->
+        <div class="login-head">
+            <div class="login-icon"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="login-title">Welcome Back</div>
+            <div class="login-sub">sign in to your depthub portal</div>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                <!-- Username -->
+                <div class="field">
+                    <label class="field-label" for="id_username">Username</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-at field-icon"></i>
+                        <input
+                            type="text"
+                            id="id_username"
+                            name="username"
+                            class="field-input"
+                            placeholder="your_username"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="field">
+                    <label class="field-label" for="id_password">Password</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-lock field-icon"></i>
+                        <input
+                            type="password"
+                            id="id_password"
+                            name="password"
+                            class="field-input"
+                            placeholder="••••••••"
+                            autocomplete="current-password"
+                            required
+                            style="padding-right:2.5rem"
+                        >
+                        <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1">
+                            <i class="bi bi-eye" id="pwIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="or-divider">secure login</div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+            </form>
+
+            <div class="register-link">
+                don't have an account? <a href="{% url 'register' %}">register here</a>
+            </div>
+        </div>
+
+        <!-- Trust signals footer -->
+        <div class="trust-row">
+            <div class="trust-item">
+                <div class="trust-val">256</div>
+                <div class="trust-lbl">bit encrypted</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-val"><i class="bi bi-shield-check" style="color:var(--green);font-size:.95rem"></i></div>
+                <div class="trust-lbl">secure portal</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-val">24/7</div>
+                <div class="trust-lbl">uptime</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const pwInput  = document.getElementById('id_password');
+    const pwToggle = document.getElementById('pwToggle');
+    const pwIcon   = document.getElementById('pwIcon');
+
+    pwToggle.addEventListener('click', () => {
+        const show = pwInput.type === 'password';
+        pwInput.type = show ? 'text' : 'password';
+        pwIcon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+</script>
+{% endblock %}

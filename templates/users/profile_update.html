@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% block page_title %}Complete Profile{% endblock %}
+
+{% block content %}
+<style>
+    .profile-wrap {
+        min-height: calc(100vh - var(--topbar-h) - 4rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .profile-card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-card::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* ── HEAD ─────────────────────────────────────────────── */
+    .profile-head {
+        padding: 1.75rem 2rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .profile-head-icon {
+        width: 46px; height: 46px;
+        background: rgba(245,166,35,.12);
+        border-radius: 12px;
+        display: grid; place-items: center;
+        font-size: 1.2rem;
+        color: var(--accent);
+        flex-shrink: 0;
+        margin-top: .1rem;
+    }
+
+    .profile-head-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--text);
+        margin-bottom: .3rem;
+    }
+
+    .profile-head-sub {
+        font-size: .75rem;
+        color: var(--muted);
+        font-family: var(--mono);
+        line-height: 1.5;
+    }
+
+    /* ── NOTICE STRIP ─────────────────────────────────────── */
+    .notice-strip {
+        margin: 1.25rem 1.75rem 0;
+        padding: .7rem 1rem;
+        background: rgba(245,166,35,.07);
+        border: 1px solid rgba(245,166,35,.2);
+        border-radius: 8px;
+        font-size: .75rem;
+        color: var(--accent);
+        font-family: var(--mono);
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+    }
+
+    /* ── BODY ─────────────────────────────────────────────── */
+    .profile-body { padding: 1.5rem 1.75rem 1.75rem; }
+
+    /* ── FIELDS ───────────────────────────────────────────── */
+    .field { margin-bottom: 1.1rem; }
+
+    .field-label {
+        display: block;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: var(--mono);
+        margin-bottom: .45rem;
+    }
+
+    .field-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .field-icon {
+        position: absolute;
+        left: .9rem;
+        color: var(--muted);
+        font-size: .95rem;
+        pointer-events: none;
+        transition: color .15s;
+        z-index: 1;
+    }
+
+    .field-input,
+    .field-select {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--text);
+        font-family: var(--display);
+        font-size: .875rem;
+        font-weight: 500;
+        padding: .7rem .9rem .7rem 2.5rem;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .field-input::placeholder { color: var(--muted); }
+
+    .field-input:focus,
+    .field-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(245,166,35,.12);
+    }
+
+    .field-wrap:focus-within .field-icon { color: var(--accent); }
+
+    /* Select chevron */
+    .select-chevron {
+        position: absolute;
+        right: .9rem;
+        color: var(--muted);
+        font-size: .85rem;
+        pointer-events: none;
+        transition: color .15s;
+    }
+
+    .field-wrap:focus-within .select-chevron { color: var(--accent); }
+
+    .field-select option {
+        background: var(--surface2);
+        color: var(--text);
+    }
+
+    /* 2-col grid for name + phone */
+    .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 480px) {
+        .field-row { grid-template-columns: 1fr; }
+        .profile-head { flex-direction: column; gap: .75rem; }
+    }
+
+    /* ── SUBMIT ───────────────────────────────────────────── */
+    .submit-btn {
+        width: 100%;
+        padding: .78rem;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 9px;
+        font-family: var(--display);
+        font-size: .9rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        cursor: pointer;
+        transition: all .2s;
+        margin-top: .5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+    }
+
+    .submit-btn:hover {
+        background: #ffc04a;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(245,166,35,.3);
+    }
+
+    .submit-btn:active { transform: translateY(0); }
+
+    /* ── PROGRESS DOTS ────────────────────────────────────── */
+    .progress-dots {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--border);
+    }
+
+    .dot.done  { background: var(--accent); }
+    .dot.active { background: var(--accent); width: 20px; border-radius: 3px; }
+</style>
+
+<div class="profile-wrap">
+    <div class="profile-card">
+
+        <div class="profile-head">
+            <div class="profile-head-icon"><i class="bi bi-person-vcard-fill"></i></div>
+            <div>
+                <div class="profile-head-title">Complete Your Profile</div>
+                <div class="profile-head-sub">
+                    required before participating in any events
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-body">
+
+            <!-- Step indicator -->
+            <div class="progress-dots">
+                <div class="dot done"></div>
+                <div class="dot active"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div class="notice-strip">
+                <i class="bi bi-info-circle-fill"></i>
+                Fill all fields accurately — used on your event ticket.
+            </div>
+
+            <form method="POST" style="margin-top:1.5rem">
+                {% csrf_token %}
+
+                <!-- Full Name + Phone in a row -->
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label" for="id_name">Full Name</label>
+                        <div class="field-wrap">
+                            <i class="bi bi-person field-icon"></i>
+                            <input
+                                type="text"
+                                id="id_name"
+                                name="name"
+                                class="field-input"
+                                value="{{ user.first_name }}"
+                                placeholder="Your full name"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="id_phone">Phone Number</label>
+                        <div class="field-wrap">
+                            <i class="bi bi-telephone field-icon"></i>
+                            <input
+                                type="text"
+                                id="id_phone"
+                                name="phone"
+                                class="field-input"
+                                value="{{ user.phone_number }}"
+                                placeholder="+91 XXXXX XXXXX"
+                                required
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- College Email -->
+                <div class="field">
+                    <label class="field-label" for="id_email">College Email ID</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-envelope field-icon"></i>
+                        <input
+                            type="email"
+                            id="id_email"
+                            name="email"
+                            class="field-input"
+                            value="{{ user.college_email }}"
+                            placeholder="you@college.edu"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Department -->
+                <div class="field">
+                    <label class="field-label" for="id_department">Department</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-building field-icon"></i>
+                        <select id="id_department" name="department" class="field-select" required>
+                            <option value="" disabled {% if not user.department %}selected{% endif %}>Select department…</option>
+                            <option value="BCA"   {% if user.department == 'BCA'   %}selected{% endif %}>BCA</option>
+                            <option value="MCA"   {% if user.department == 'MCA'   %}selected{% endif %}>MCA</option>
+                            <option value="OTHER" {% if user.department == 'OTHER' %}selected{% endif %}>Other</option>
+                        </select>
+                        <i class="bi bi-chevron-down select-chevron"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="bi bi-check-circle-fill"></i> Save Profile
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

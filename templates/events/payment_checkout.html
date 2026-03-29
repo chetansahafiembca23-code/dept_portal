@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% block page_title %}Complete Payment{% endblock %}
+
+{% block content %}
+<style>
+    .checkout-wrap {
+        min-height: calc(100vh - var(--topbar-h) - 4rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .checkout-card {
+        width: 100%;
+        max-width: 460px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Green top bar — payment = trust = green */
+    .checkout-card::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--green), #0ea879);
+    }
+
+    /* ── HEAD ─────────────────────────────────────────── */
+    .checkout-head {
+        padding: 1.75rem 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .checkout-icon {
+        width: 52px; height: 52px;
+        background: rgba(44,218,130,.1);
+        border: 1px solid rgba(44,218,130,.2);
+        border-radius: 14px;
+        display: grid; place-items: center;
+        font-size: 1.3rem;
+        color: var(--green);
+        margin: 0 auto .9rem;
+    }
+
+    .checkout-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--text);
+        margin-bottom: .25rem;
+    }
+
+    .checkout-sub {
+        font-size: .75rem;
+        color: var(--muted);
+        font-family: var(--mono);
+    }
+
+    /* ── AMOUNT DISPLAY ───────────────────────────────── */
+    .amount-display {
+        padding: 1.5rem 2rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface2);
+    }
+
+    .amount-for {
+        font-family: var(--mono);
+        font-size: .68rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        margin-bottom: .5rem;
+    }
+
+    .amount-event {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: .75rem;
+    }
+
+    .amount-value {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -.06em;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .amount-value span {
+        font-size: 1.5rem;
+        color: var(--muted);
+        vertical-align: super;
+        font-weight: 600;
+        margin-right: .1rem;
+    }
+
+    /* ── ORDER DETAILS ────────────────────────────────── */
+    .order-details {
+        padding: 1.1rem 1.75rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .order-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: .8rem;
+    }
+
+    .order-key {
+        font-family: var(--mono);
+        font-size: .67rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .order-val {
+        font-weight: 700;
+        color: var(--text);
+        font-size: .82rem;
+    }
+
+    .order-val.mono { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+
+    /* ── BODY ─────────────────────────────────────────── */
+    .checkout-body { padding: 1.5rem 1.75rem 1.75rem; }
+
+    /* Pay button */
+    .pay-btn {
+        width: 100%;
+        padding: .85rem;
+        background: var(--green);
+        color: #000;
+        border: none;
+        border-radius: 9px;
+        font-family: var(--display);
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        cursor: pointer;
+        transition: all .2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        margin-bottom: .85rem;
+    }
+
+    .pay-btn:hover {
+        background: #3eeea0;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(44,218,130,.3);
+    }
+
+    .pay-btn:active { transform: translateY(0); }
+
+    /* Security hint */
+    .secure-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        font-family: var(--mono);
+        font-size: .65rem;
+        color: var(--muted);
+        margin-bottom: 1.1rem;
+    }
+
+    .secure-hint i { color: var(--green); font-size: .7rem; }
+
+    /* Cancel link */
+    .cancel-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        font-family: var(--mono);
+        font-size: .7rem;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color .15s;
+        padding: .5rem;
+        border-radius: 7px;
+    }
+
+    .cancel-link:hover { color: #f43f5e; }
+
+    /* Razorpay branding strip */
+    .rzp-branding {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .75rem 1.75rem;
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: .62rem;
+        color: var(--muted);
+    }
+
+    .rzp-branding i { font-size: .7rem; }
+
+    /* Hidden form inputs */
+    #razorpay-form { display: none; }
+
+    /* Loading state on button */
+    .pay-btn.loading {
+        opacity: .7;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+</style>
+
+<div class="checkout-wrap">
+    <div class="checkout-card">
+
+        <!-- Head -->
+        <div class="checkout-head">
+            <div class="checkout-icon"><i class="bi bi-lock-fill"></i></div>
+            <div class="checkout-title">Complete Your Payment</div>
+            <div class="checkout-sub">secure checkout via razorpay</div>
+        </div>
+
+        <!-- Amount -->
+        <div class="amount-display">
+            <div class="amount-for">Entry Fee for</div>
+            <div class="amount-event">{{ enrollment.event.title }}</div>
+            <div class="amount-value">
+                <span>₹</span>{{ enrollment.event.fee }}
+            </div>
+        </div>
+
+        <!-- Order details -->
+        <div class="order-details">
+            <div class="order-row">
+                <span class="order-key">Student</span>
+                <span class="order-val">{{ enrollment.user.first_name|default:enrollment.user.username }}</span>
+            </div>
+            <div class="order-row">
+                <span class="order-key">Activity</span>
+                <span class="order-val">{{ enrollment.activity.name|default:"General Entry" }}</span>
+            </div>
+            <div class="order-row">
+                <span class="order-key">Order ID</span>
+                <span class="order-val mono">{{ razorpay_order_id }}</span>
+            </div>
+            <div class="order-row">
+                <span class="order-key">Currency</span>
+                <span class="order-val">INR</span>
+            </div>
+        </div>
+
+        <!-- Pay action -->
+        <div class="checkout-body">
+
+            <!-- Hidden form submitted after Razorpay confirms payment -->
+            <form id="razorpay-form" action="{% url 'payment_verify' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="razorpay_payment_id" name="razorpay_payment_id">
+                <input type="hidden" id="razorpay_order_id"   name="razorpay_order_id">
+                <input type="hidden" id="razorpay_signature"  name="razorpay_signature">
+            </form>
+
+            <button id="rzp-button1" class="pay-btn">
+                <i class="bi bi-shield-lock-fill"></i>
+                Pay ₹{{ enrollment.event.fee }} Securely
+            </button>
+
+            <div class="secure-hint">
+                <i class="bi bi-shield-check"></i>
+                256-bit encrypted &nbsp;·&nbsp; powered by Razorpay
+            </div>
+
+            <a href="{% url 'dashboard' %}" class="cancel-link">
+                <i class="bi bi-x-circle"></i> Cancel &amp; return to dashboard
+            </a>
+
+        </div>
+
+        <!-- Razorpay branding -->
+        <div class="rzp-branding">
+            <i class="bi bi-lock"></i>
+            Secured by Razorpay &nbsp;·&nbsp; PCI DSS compliant
+        </div>
+
+    </div>
+</div>
+
+<!-- Razorpay checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key":         "{{ razorpay_key_id }}",
+        "amount":      "{{ amount }}",
+        "currency":    "INR",
+        "name":        "DeptHub Portal",
+        "description": "Entry Fee for {{ enrollment.event.title }}",
+        "order_id":    "{{ razorpay_order_id }}",
+
+        "handler": function(response) {
+            // Razorpay confirmed payment — fill hidden form and submit to verify view
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value   = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value  = response.razorpay_signature;
+            document.getElementById('razorpay-form').submit();
+        },
+
+        "prefill": {
+            "name":    "{{ enrollment.user.first_name }}",
+            "email":   "{{ enrollment.user.college_email }}",
+            "contact": "{{ enrollment.user.phone_number }}"
+        },
+
+        "theme": { "color": "#2cda82" },   /* matches --green */
+
+        /* Payment method blocks — UPI first for Indian users */
+        "config": {
+            "display": {
+                "blocks": {
+                    "upi_section": {
+                        "name": "Pay via Scan QR / UPI",
+                        "instruments": [{ "method": "upi" }]
+                    },
+                    "card_section": {
+                        "name": "Pay via Credit / Debit Card",
+                        "instruments": [{ "method": "card" }]
+                    },
+                    "netbanking_section": {
+                        "name": "Pay via Net Banking",
+                        "instruments": [{ "method": "netbanking" }]
+                    }
+                },
+                "sequence": [
+                    "block.upi_section",
+                    "block.card_section",
+                    "block.netbanking_section"
+                ],
+                "preferences": {
+                    "show_default_blocks": true   /* Wallets (Paytm etc.) at bottom */
+                }
+            }
+        }
+    };
+
+    var rzp1 = new Razorpay(options);
+
+    rzp1.on('payment.failed', function(response) {
+        // Re-enable button so user can retry
+        var btn = document.getElementById('rzp-button1');
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="bi bi-shield-lock-fill"></i> Pay ₹{{ enrollment.event.fee }} Securely';
+        alert("Payment failed or was cancelled. Please try again.\nReason: " + response.error.description);
+    });
+
+    document.getElementById('rzp-button1').onclick = function(e) {
+        e.preventDefault();
+        // Show loading state while Razorpay modal opens
+        this.classList.add('loading');
+        this.innerHTML = '<i class="bi bi-arrow-repeat"></i> Opening Razorpay…';
+        rzp1.open();
+    };
+</script>
+
+{% endblock %}
